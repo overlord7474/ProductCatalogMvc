@@ -1,0 +1,54 @@
+@model ProductCatalogMvc.Models.ProductIndexViewModel
+@using System.Globalization
+
+<div class="catalog-pagination">
+    <p class="pagination-summary">
+        Showing @((Model.PageNumber - 1) * Model.PageSize + 1)–@(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalItems))
+        of @Model.TotalItems products · Page @Model.PageNumber of @Model.TotalPages
+    </p>
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Product pages">
+            <ul class="pagination mb-0">
+                @if (Model.HasPreviousPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-controller="Product" asp-action="Filter"
+                           asp-route-page="@(Model.PageNumber - 1)" asp-route-categoryId="@Model.CategoryId"
+                           asp-route-minimumPrice="@Model.MinimumPrice?.ToString(CultureInfo.InvariantCulture)"
+                           asp-route-maximumPrice="@Model.MaximumPrice?.ToString(CultureInfo.InvariantCulture)"
+                           asp-route-searchTerm="@Model.SearchTerm" asp-route-sortOrder="@Model.SortOrder">Previous</a>
+                    </li>
+                }
+                @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++)
+                {
+                    if (pageNumber == Model.PageNumber)
+                    {
+                        <li class="page-item active"><span class="page-link" aria-current="page">@pageNumber</span></li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-controller="Product" asp-action="Filter"
+                               asp-route-page="@pageNumber" asp-route-categoryId="@Model.CategoryId"
+                               asp-route-minimumPrice="@Model.MinimumPrice?.ToString(CultureInfo.InvariantCulture)"
+                               asp-route-maximumPrice="@Model.MaximumPrice?.ToString(CultureInfo.InvariantCulture)"
+                               asp-route-searchTerm="@Model.SearchTerm" asp-route-sortOrder="@Model.SortOrder"
+                               aria-label="Go to page @pageNumber">@pageNumber</a>
+                        </li>
+                    }
+                }
+                @if (Model.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-controller="Product" asp-action="Filter"
+                           asp-route-page="@(Model.PageNumber + 1)" asp-route-categoryId="@Model.CategoryId"
+                           asp-route-minimumPrice="@Model.MinimumPrice?.ToString(CultureInfo.InvariantCulture)"
+                           asp-route-maximumPrice="@Model.MaximumPrice?.ToString(CultureInfo.InvariantCulture)"
+                           asp-route-searchTerm="@Model.SearchTerm" asp-route-sortOrder="@Model.SortOrder">Next</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

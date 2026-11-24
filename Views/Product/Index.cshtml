@@ -1,0 +1,158 @@
+@model ProductCatalogMvc.Models.ProductIndexViewModel
+@using ProductCatalogMvc.Models
+@using System.Globalization
+
+@{
+    var categories = ViewData["Categories"] as IReadOnlyList<Category> ?? Array.Empty<Category>();
+}
+
+<section class="hero-section">
+    <div class="hero-copy">
+        <p class="eyebrow">THE EVERYDAY EDIT</p>
+        <h1>Find your next<br /><span>favorite thing.</span></h1>
+        <p class="hero-description">@ViewBag.WelcomeMessage</p>
+        <a class="text-link" href="#products">Explore the collection <span aria-hidden="true">↓</span></a>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+        <div class="hero-circle"></div>
+        <div class="hero-label">Useful<br />things,<br /><em>well chosen.</em></div>
+        <div class="hero-spark">✳</div>
+    </div>
+</section>
+
+<section class="stats-grid" aria-label="Catalog statistics">
+    <article class="stat-card">
+        <span class="stat-label">In the catalog</span>
+        <strong>@ViewBag.TotalProducts</strong>
+        <span class="stat-note">products to explore</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Average price</span>
+        <strong>@(((decimal)ViewBag.AveragePrice).ToString("C", CultureInfo.GetCultureInfo("en-US")))</strong>
+        <span class="stat-note">across all products</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Total catalog value</span>
+        <strong>@(((decimal)ViewBag.TotalValue).ToString("C", CultureInfo.GetCultureInfo("en-US")))</strong>
+        <span class="stat-note">sum of all product prices</span>
+    </article>
+</section>
+
+<section class="catalog-section" id="products">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">A LITTLE SOMETHING FOR EVERY DAY</p>
+            <h2>@ViewBag.PageTitle</h2>
+        </div>
+        <span class="result-count">@Model.TotalItems product(s) found</span>
+    </div>
+
+    @await Html.PartialAsync("_StatusMessages")
+
+    <form asp-controller="Product" asp-action="Filter" method="get" class="filter-panel">
+        <div class="filter-title-row">
+            <div>
+                <h3>Find something specific</h3>
+                <p>Filter by category or price, search by keyword, and sort the results.</p>
+            </div>
+            <a asp-controller="Product" asp-action="Reset" class="reset-link">Reset filters</a>
+        </div>
+        <div class="filter-fields">
+            <label class="field field-search">
+                <span>Keyword</span>
+                <input type="search" name="searchTerm" value="@Model.SearchTerm" placeholder="Name, description, category" />
+            </label>
+            <label class="field">
+                <span>Category</span>
+                <select name="categoryId">
+                    <option value="">All categories</option>
+                    @foreach (var category in categories)
+                    {
+                        if (Model.CategoryId == category.Id)
+                        {
+                            <option value="@category.Id" selected>@category.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    }
+                </select>
+            </label>
+            <label class="field field-price">
+                <span>Min price</span>
+                <input type="number" name="minimumPrice" value="@Model.MinimumPrice?.ToString(CultureInfo.InvariantCulture)" min="0" step="0.01" placeholder="$0" />
+            </label>
+            <label class="field field-price">
+                <span>Max price</span>
+                <input type="number" name="maximumPrice" value="@Model.MaximumPrice?.ToString(CultureInfo.InvariantCulture)" min="0" step="0.01" placeholder="No limit" />
+            </label>
+            <label class="field">
+                <span>Sort by</span>
+                <select name="sortOrder">
+                    @if (Model.SortOrder is null or "name")
+                    {
+                        <option value="name" selected>Name, A to Z</option>
+                    }
+                    else
+                    {
+                        <option value="name">Name, A to Z</option>
+                    }
+                    @if (Model.SortOrder == "price")
+                    {
+                        <option value="price" selected>Price, low to high</option>
+                    }
+                    else
+                    {
+                        <option value="price">Price, low to high</option>
+                    }
+                    @if (Model.SortOrder == "price_desc")
+                    {
+                        <option value="price_desc" selected>Price, high to low</option>
+                    }
+                    else
+                    {
+                        <option value="price_desc">Price, high to low</option>
+                    }
+                </select>
+            </label>
+            <button type="submit" class="button button-primary filter-button">Apply filters <span aria-hidden="true">↗</span></button>
+        </div>
+    </form>
+
+    @if (Model.Products.Count == 0)
+    {
+        <div class="empty-state">
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <h3>No products match those filters.</h3>
+            <p>Try a different word or widen the price range.</p>
+            <a class="button button-secondary" asp-controller="Product" asp-action="Reset">Show all products</a>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var product in Model.Products)
+            {
+                <article class="product-card">
+                    <div class="product-visual visual-@product.CategoryId">
+                        <span class="product-category">@product.Category?.Name</span>
+                        <span class="product-monogram">@product.Name.Substring(0, 1)</span>
+                        <span class="visual-spark" aria-hidden="true">✳</span>
+                    </div>
+                    <div class="product-card-body">
+                        <div class="product-title-row">
+                            <h3>@product.Name</h3>
+                            <span class="product-price">@product.Price.ToString("C", CultureInfo.GetCultureInfo("en-US"))</span>
+                        </div>
+                        <p>@product.Description</p>
+                        <a class="product-link" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">
+                            View details <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </article>
+            }
+        </div>
+        @await Html.PartialAsync("_Pagination", Model)
+    }
+</section>

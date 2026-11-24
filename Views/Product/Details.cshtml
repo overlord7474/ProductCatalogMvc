@@ -1,0 +1,29 @@
+@model ProductCatalogMvc.Models.Product
+@using System.Globalization
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<section class="details-page">
+    <a class="back-link" asp-controller="Product" asp-action="Index">← Back to the catalog</a>
+    @await Html.PartialAsync("_StatusMessages")
+    <div class="details-card">
+        <div class="details-visual visual-@Model.CategoryId">
+            <span class="product-category">@Model.Category?.Name</span>
+            <span class="details-monogram">@Model.Name.Substring(0, 1)</span>
+            <span class="visual-spark" aria-hidden="true">✳</span>
+        </div>
+        <div class="details-copy">
+            <p class="eyebrow">PRODUCT DETAILS · #@Model.Id</p>
+            <h1>@Model.Name</h1>
+            <p class="details-description">@Model.Description</p>
+            <p class="details-price">@Model.Price.ToString("C", CultureInfo.GetCultureInfo("en-US"))</p>
+            <div class="details-meta">
+                <span>Category</span>
+                <strong>@Model.Category?.Name</strong>
+            </div>
+            <a class="button button-primary" asp-controller="Product" asp-action="Index">Continue browsing</a>
+        </div>
+    </div>
+</section>
